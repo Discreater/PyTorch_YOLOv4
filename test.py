@@ -10,7 +10,7 @@ import torch
 import yaml
 from tqdm import tqdm
 
-from models.experimental import attempt_load
+# from models.experimental import attempt_load
 from utils.datasets import create_dataloader
 from utils.general import (
     coco80_to_coco91_class, check_file, check_img_size, compute_loss, non_max_suppression,
@@ -18,7 +18,7 @@ from utils.general import (
 from utils.torch_utils import select_device, time_synchronized
 
 from models.models import *
-#from utils.datasets import *
+# from utils.datasets import *
 
 def load_classes(path):
     # Loads *.names file at 'path'
@@ -264,7 +264,7 @@ def test(data,
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='test.py')
     parser.add_argument('--weights', nargs='+', type=str, default='yolov4.pt', help='model.pt path(s)')
-    parser.add_argument('--data', type=str, default='data/coco128.yaml', help='*.data path')
+    parser.add_argument('--data', type=str, default='data/coco.yaml', help='*.data path')
     parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.001, help='object confidence threshold')
@@ -282,7 +282,6 @@ if __name__ == '__main__':
     opt = parser.parse_args()
     opt.save_json |= opt.data.endswith('coco.yaml')
     opt.data = check_file(opt.data)  # check file
-    print(opt)
 
     if opt.task in ['val', 'test']:  # run normally
         test(opt.data,

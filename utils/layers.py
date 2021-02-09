@@ -5,7 +5,7 @@ from utils.general import *
 import torch
 from torch import nn
 
-from mish_cuda import MishCuda as Mish
+# from mish_cuda import MishCuda as Mish
 
 
 def make_divisible(v, divisor):
@@ -178,9 +178,10 @@ class HardSwish(nn.Module):  # https://arxiv.org/pdf/1905.02244.pdf
         return x * F.hardtanh(x + 3, 0., 6., True) / 6.
 
 
-#class Mish(nn.Module):  # https://github.com/digantamisra98/Mish
-#    def forward(self, x):
-#        return x * F.softplus(x).tanh()
+class Mish(nn.Module):  # https://github.com/digantamisra98/Mish
+   def forward(self, x):
+       return x * F.softplus(x).tanh()
+
 
 class DeformConv2d(nn.Module):
     def __init__(self, inc, outc, kernel_size=3, padding=1, stride=1, bias=None, modulation=False):

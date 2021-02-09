@@ -58,12 +58,12 @@ def create_modules(module_defs, img_size, cfg):
             stride = mdef['stride'] if 'stride' in mdef else (mdef['stride_y'], mdef['stride_x'])
             if isinstance(k, int):  # single-size conv
                 modules.add_module('DeformConv2d', DeformConv2d(output_filters[-1],
-                                                       filters,
-                                                       kernel_size=k,
-                                                       padding=k // 2 if mdef['pad'] else 0,
-                                                       stride=stride,
-                                                       bias=not bn,
-                                                       modulation=True))
+                                                                filters,
+                                                                kernel_size=k,
+                                                                padding=k // 2 if mdef['pad'] else 0,
+                                                                stride=stride,
+                                                                bias=not bn,
+                                                                modulation=True))
             else:  # multiple-size conv
                 modules.add_module('MixConv2d', MixConv2d(in_ch=output_filters[-1],
                                                           out_ch=filters,
@@ -128,7 +128,7 @@ def create_modules(module_defs, img_size, cfg):
 
         elif mdef['type'] == 'route_lhalf':  # nn.Sequential() placeholder for 'route' layer
             layers = mdef['layers']
-            filters = sum([output_filters[l + 1 if l > 0 else l] for l in layers])//2
+            filters = sum([output_filters[l + 1 if l > 0 else l] for l in layers]) // 2
             routs.extend([i + l if l < 0 else l for l in layers])
             modules = FeatureConcat_l(layers=layers)
 
@@ -159,7 +159,7 @@ def create_modules(module_defs, img_size, cfg):
                 j = layers[yolo_index] if 'from' in mdef else -1
                 bias_ = module_list[j][0].bias  # shape(255,)
                 bias = bias_[:modules.no * modules.na].view(modules.na, -1)  # shape(3,85)
-                #bias[:, 4] += -4.5  # obj
+                # bias[:, 4] += -4.5  # obj
                 bias[:, 4] += math.log(8 / (640 / stride[yolo_index]) ** 2)  # obj (8 objects per 640 image)
                 bias[:, 5:] += math.log(0.6 / (modules.nc - 0.99))  # cls (sigmoid(p) = 1/nc)
                 module_list[j][0].bias = torch.nn.Parameter(bias_, requires_grad=bias_.requires_grad)
@@ -264,12 +264,13 @@ class YOLOLayer(nn.Module):
             io[..., :2] = (io[..., :2] * 2. - 0.5 + self.grid)
             io[..., 2:4] = (io[..., 2:4] * 2) ** 2 * self.anchor_wh
             io[..., :4] *= self.stride
-            #io = p.clone()  # inference output
-            #io[..., :2] = torch.sigmoid(io[..., :2]) + self.grid  # xy
-            #io[..., 2:4] = torch.exp(io[..., 2:4]) * self.anchor_wh  # wh yolo method
-            #io[..., :4] *= self.stride
-            #torch.sigmoid_(io[..., 4:])
+            # io = p.clone()  # inference output
+            # io[..., :2] = torch.sigmoid(io[..., :2]) + self.grid  # xy
+            # io[..., 2:4] = torch.exp(io[..., 2:4]) * self.anchor_wh  # wh yolo method
+            # io[..., :4] *= self.stride
+            # torch.sigmoid_(io[..., 4:])
             return io.view(bs, -1, self.no), p  # view [1, 3, 13, 13, 85] as [1, 507, 85]
+
 
 class Darknet(nn.Module):
     # YOLOv3 object detection model
@@ -335,7 +336,8 @@ class Darknet(nn.Module):
 
         for i, module in enumerate(self.module_list):
             name = module.__class__.__name__
-            if name in ['WeightedFeatureFusion', 'FeatureConcat', 'FeatureConcat2', 'FeatureConcat3', 'FeatureConcat_l']:  # sum, concat
+            if name in ['WeightedFeatureFusion', 'FeatureConcat', 'FeatureConcat2', 'FeatureConcat3',
+                        'FeatureConcat_l']:  # sum, concat
                 if verbose:
                     l = [i - 1] + module.layers  # layers
                     sh = [list(x.shape)] + [list(out[i].shape) for i in module.layers]  # shapes
@@ -481,6 +483,7 @@ def convert(cfg='cfg/yolov3-spp.cfg', weights='weights/yolov3-spp.weights', save
         save_weights(model, path=saveto, cutoff=-1)
     except KeyError as e:
         print(e)
+
 
 def attempt_download(weights):
     # Attempt to download pretrained weights if not found locally
